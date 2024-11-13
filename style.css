@@ -1,0 +1,51 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+.container {
+  text-align: center;
+}
+
+#file-input {
+  margin: 10px 0;
+}
+
+#canvas-container {
+  position: relative;
+  display: none;
+  width: 300px;
+  height: 300px;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.crop-area {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: 2px dashed #00f;
+  cursor: move;
+  box-sizing: border-box;
+}
+
+.controls {
+  margin-top: 10px;
+}
+
+.controls button {
+  padding: 8px 16px;
+  margin: 0 5px;
+  cursor: pointer;
+}

@@ -18,10 +18,4 @@ This project is a simple web-based profile picture cropping tool. Users can uplo
 - HTML, CSS, and JavaScript for the frontend structure, styling, and interactivity.
 - Canvas API for rendering and cropping the image.
 
-## Project Structure
 
-```plaintext
-.
-├── index.html       # Main HTML file with structure and JavaScript for the cropping functionality
-├── demo.png         # Demonstration image showing the profile picture crop interface
-└── README.md        # Project documentation

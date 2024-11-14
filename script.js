@@ -9,9 +9,24 @@ const downloadLink = document.getElementById("download-link");
 let img = new Image();
 let startX,
   startY,
-  offsetX,
-  offsetY,
+  offsetLeft,
+  offsetTop,
   isDragging = false;
+let drawScale = 1;
+let drawOffsetX = 0;
+let drawOffsetY = 0;
+
+// Set a default image if no file is uploaded
+const defaultImageSrc = "default-image.png"; // Change this to your actual default image path
+
+function loadDefaultImage() {
+  img.src = defaultImageSrc;
+  img.onload = function () {
+    drawImage();
+    canvasContainer.style.display = "block";
+    cropBtn.style.display = "none";
+  };
+}
 
 fileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
@@ -22,72 +37,68 @@ fileInput.addEventListener("change", (e) => {
       img.onload = function () {
         drawImage();
         canvasContainer.style.display = "block";
-        // Center the crop area on the image
-        cropArea.style.left = "50px"; // Center position (300 - 200) / 2
-        cropArea.style.top = "50px"; // Center position (300 - 200) / 2
+        cropBtn.style.display = "inline-block"; // Show crop button
+        cropArea.style.left = `${(canvas.width - cropArea.offsetWidth) / 2}px`;
+        cropArea.style.top = `${(canvas.height - cropArea.offsetHeight) / 2}px`;
+        downloadLink.style.display = "none";
       };
     };
     reader.readAsDataURL(file);
+  } else {
+    loadDefaultImage(); // Load default image if no file is selected
   }
 });
 
 function drawImage() {
-  // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Calculate aspect ratios
-  const canvasAspectRatio = canvas.width / canvas.height;
-  const imageAspectRatio = img.width / img.height;
+  const canvasAspect = canvas.width / canvas.height;
+  const imgAspect = img.width / img.height;
 
-  let sx, sy, sWidth, sHeight;
+  let drawWidth, drawHeight, offsetX, offsetY;
 
-  // Determine cropping dimensions to simulate object-fit: cover
-  if (imageAspectRatio > canvasAspectRatio) {
-    // Image is wider than canvas
-    sHeight = img.height;
-    sWidth = img.height * canvasAspectRatio;
-    sx = (img.width - sWidth) / 2;
-    sy = 0;
+  if (imgAspect > canvasAspect) {
+    drawHeight = canvas.height;
+    drawWidth = img.width * (canvas.height / img.height);
+    offsetX = (canvas.width - drawWidth) / 2;
+    offsetY = 0;
   } else {
-    // Image is taller than canvas
-    sWidth = img.width;
-    sHeight = img.width / canvasAspectRatio;
-    sx = 0;
-    sy = (img.height - sHeight) / 2;
+    drawWidth = canvas.width;
+    drawHeight = img.height * (canvas.width / img.width);
+    offsetX = 0;
+    offsetY = (canvas.height - drawHeight) / 2;
   }
 
-  // Draw the image with calculated cropping
-  ctx.drawImage(
-    img,
-    sx,
-    sy,
-    sWidth,
-    sHeight,
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
+  drawScale = drawWidth / img.width;
+  drawOffsetX = offsetX;
+  drawOffsetY = offsetY;
+
+  ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 }
 
-// Crop area drag functionality
 cropArea.addEventListener("mousedown", (e) => {
   isDragging = true;
   startX = e.clientX;
   startY = e.clientY;
-  offsetX = cropArea.offsetLeft;
-  offsetY = cropArea.offsetTop;
+  offsetLeft = cropArea.offsetLeft;
+  offsetTop = cropArea.offsetTop;
+  e.preventDefault();
 });
 
 document.addEventListener("mousemove", (e) => {
   if (isDragging) {
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-
-    // Constrain crop area within the 300x300px image boundaries
-    const newLeft = Math.min(Math.max(0, offsetX + dx), 300 - 200);
-    const newTop = Math.min(Math.max(0, offsetY + dy), 300 - 200);
-
+    let newLeft = offsetLeft + dx;
+    let newTop = offsetTop + dy;
+    newLeft = Math.min(
+      Math.max(0, newLeft),
+      canvas.width - cropArea.offsetWidth
+    );
+    newTop = Math.min(
+      Math.max(0, newTop),
+      canvas.height - cropArea.offsetHeight
+    );
     cropArea.style.left = `${newLeft}px`;
     cropArea.style.top = `${newTop}px`;
   }
@@ -98,30 +109,45 @@ document.addEventListener("mouseup", () => {
 });
 
 cropBtn.addEventListener("click", () => {
-  const cropX = cropArea.offsetLeft * (img.width / 300);
-  const cropY = cropArea.offsetTop * (img.height / 300);
-  const cropWidth = 200 * (img.width / 300);
-  const cropHeight = 200 * (img.height / 300);
+  const cropLeft =
+    (parseInt(cropArea.style.left, 10) - drawOffsetX) / drawScale;
+  const cropTop = (parseInt(cropArea.style.top, 10) - drawOffsetY) / drawScale;
+  const cropWidth = cropArea.offsetWidth / drawScale;
+  const cropHeight = cropArea.offsetHeight / drawScale;
+
+  const clampedCropLeft = Math.max(0, cropLeft);
+  const clampedCropTop = Math.max(0, cropTop);
+  const clampedCropWidth = Math.min(cropWidth, img.width - clampedCropLeft);
+  const clampedCropHeight = Math.min(cropHeight, img.height - clampedCropTop);
 
   const croppedCanvas = document.createElement("canvas");
-  croppedCanvas.width = 200;
-  croppedCanvas.height = 200;
+  croppedCanvas.width = cropArea.offsetWidth;
+  croppedCanvas.height = cropArea.offsetHeight;
   const croppedCtx = croppedCanvas.getContext("2d");
 
   croppedCtx.drawImage(
     img,
-    cropX,
-    cropY,
-    cropWidth,
-    cropHeight,
+    clampedCropLeft,
+    clampedCropTop,
+    clampedCropWidth,
+    clampedCropHeight,
     0,
     0,
-    200,
-    200
+    croppedCanvas.width,
+    croppedCanvas.height
   );
 
   downloadLink.href = croppedCanvas.toDataURL("image/png");
   downloadLink.download = "cropped-profile-picture.png";
   downloadLink.style.display = "inline-block";
-  downloadLink.innerText = "Download Cropped Image";
+  downloadLink.innerText = "Download";
 });
+
+window.addEventListener("resize", () => {
+  if (img.src) {
+    drawImage();
+  }
+});
+
+// Load default image on page load
+loadDefaultImage();

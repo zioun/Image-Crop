@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css">
-    <title>Profile Picture Crop System</title>
-  </head>
-  <body>
-    <div class="container">
-      <h2>Profile Picture Crop</h2>
-      <input type="file" id="file-input" accept="image/*" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css">
+  <title>Profile Picture Crop System</title>
+</head>
+<body>
+  <div class="container">
+    <label for="file-input" class="upload-btn" id="upload-btn">
+      <!-- SVG Upload Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M19.35 10.04a7.49 7.49 0 00-14-2A5.998 5.998 0 006 20h13a5 5 0 00.35-9.96zM19 18H6a4 4 0 01-.2-7.98 1 1 0 00.87-.68 6.002 6.002 0 0111.66.24 1 1 0 00.81.62A3 3 0 0119 18zm-7-6v4h2v-4h3l-4-4-4 4h3z"/>
+      </svg>
+    </label>
+    <input type="file" class="file-input" id="file-input" accept="image/*" />
 
-      <div id="canvas-container">
-        <canvas id="canvas" width="300" height="300"></canvas>
-        <div class="crop-area" id="crop-area"></div>
-      </div>
-
-      <div class="controls">
-        <button id="crop-btn">Crop & Save</button>
-        <a id="download-link" style="display: none">Download Cropped Image</a>
-      </div>
+    <div id="canvas-container">
+      <canvas id="canvas" width="300" height="300"></canvas>
+      <div class="crop-area" id="crop-area"></div>
     </div>
-    <script src="script.js"></script>
-  </body>
+
+    <div class="controls">
+      <button id="crop-btn" style="display: none">Crop & Save</button>
+      <a id="download-link">Download</a>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
 </html>
-
-
